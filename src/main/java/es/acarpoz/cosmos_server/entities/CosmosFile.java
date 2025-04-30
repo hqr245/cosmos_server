@@ -50,6 +50,10 @@ public class CosmosFile {
     @Column(name = "last_modification_date", nullable = false)
     private LocalDate lastModificationDate;
 
+    @Lob
+    @Column(name = "file_content", columnDefinition = "LONGBLOB", nullable = false)
+    private byte[] fileContent;
+
     /*End of the class, there is no need to have a constructor, getters and setters, equals and hashcode methods,
      toString method or any other default method, because the Lombok library will generate them automatically.*/
 }
