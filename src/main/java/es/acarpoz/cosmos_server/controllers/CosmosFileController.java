@@ -1,12 +1,8 @@
 package es.acarpoz.cosmos_server.controllers;
-
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.List;
+import java.util.List;  
 import java.util.Map;
-
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import es.acarpoz.cosmos_server.entities.CosmosFile;
 import es.acarpoz.cosmos_server.services.CosmosFileService;
@@ -55,50 +51,32 @@ public class CosmosFileController {
     }
 
     // Endpoint used in order to upload a file to the database.
-    // It returns a ResponseEntity with the uploaded file or an error message.
-    @PostMapping(value = "/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Object> uploadFile(@RequestParam("fileContent") MultipartFile fileContent,
-                                            @RequestParam("creationDate") LocalDate creationDate,
-                                             @RequestParam("lastModificationDate") LocalDate lastModificationDate,
-                                             @RequestParam("encryptingType") String encryptingType,
-                                             @RequestParam("filePath") String filePath) {
-
+    @PostMapping(value = "/files", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> uploadFile(@RequestBody CosmosFile cosmosFile) {
 
         Map<String, Object> response = new HashMap<>();
 
         try {
-            CosmosFile cosmosFile = new CosmosFile();
-            cosmosFile.setFileName(fileContent.getOriginalFilename());
-            cosmosFile.setFileSize(fileContent.getSize());
-            cosmosFile.setFileContent(fileContent.getBytes());
-            cosmosFile.setCreationDate(creationDate);
-            cosmosFile.setLastModificationDate(lastModificationDate);
-            cosmosFile.setEncryptingType(encryptingType);
-            cosmosFile.setFilePath(filePath);
-
             CosmosFile savedFile = cosmosFileService.save(cosmosFile);
 
             response.put(M_STRING, "File uploaded successfully");
             response.put("file", savedFile);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
-
-        } catch (IOException e) {
-            response.put(M_STRING, "Error reading file: " + e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             response.put(M_STRING, "Error uploading file: " + e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    
 
     // Endpoint used in order to update a file based in their ID in the database.
     // It returns a ResponseEntity with the updated file or an error message.
-    @PostMapping(value = "/files/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/files/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updateFile(@PathVariable Long id,
-                                             @RequestParam("fileContent") MultipartFile fileContent,
-                                             @RequestParam("creationDate") LocalDate creationDate,
-                                             @RequestParam("lastModificationDate") LocalDate lastModificationDate,
-                                             @RequestParam("encryptingType") String encryptingType,
+                                             @RequestParam("fileName") String fileName,  
+                                             @RequestParam("fileContent") byte[] fileContent,
+                                             @RequestParam("lastModificationDate") LocalDate encDate,
+                                             @RequestParam("encryptingType") String keyName,
                                              @RequestParam("filePath") String filePath) {
 
         Map<String, Object> response = new HashMap<>();
@@ -110,49 +88,24 @@ public class CosmosFileController {
                 return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
             }
 
-            existingFile.setFileName(fileContent.getOriginalFilename());
-            existingFile.setFileSize(fileContent.getSize());
-            existingFile.setFileContent(fileContent.getBytes());
-            existingFile.setCreationDate(creationDate);
-            existingFile.setLastModificationDate(lastModificationDate);
-            existingFile.setEncryptingType(encryptingType);
-            existingFile.setFilePath(filePath);
+            existingFile.setFileName(existingFile.getFileName());
+            existingFile.setFileSize(existingFile.getFileSize());
+            existingFile.setFileContent(existingFile.getFileContent());
+            existingFile.setEncDate(existingFile.getEncDate());
+            existingFile.setKeyName(existingFile.getKeyName());
+            existingFile.setFilePath(existingFile.getFilePath());
 
             CosmosFile updatedFile = cosmosFileService.save(existingFile);
 
             response.put(M_STRING, "File updated successfully");
             response.put("file", updatedFile);
             return new ResponseEntity<>(response, HttpStatus.OK);
-
-        } catch (IOException e) {
-            response.put(M_STRING, "Error reading file: " + e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             response.put(M_STRING, "Error updating file: " + e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-
-    // Endpoint used in order to get a file by its id 
-    // It returns a ResponseEntity with the file or an error message.
-    @GetMapping("/files/{id}")
-    public ResponseEntity<Object> getFileById(@PathVariable Long id) {
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-            CosmosFile file = cosmosFileService.findById(id);
-            if (file != null) {
-                return new ResponseEntity<>(file, HttpStatus.OK);
-            } else {
-                response.put(M_STRING, FNF_STRING);
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception e) {
-            response.put(M_STRING, "Error retrieving file: " + e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 
     // Endpoint used in order to delete a file by its id
     // It returns a ResponseEntity with a success message or an error message.

@@ -22,6 +22,7 @@ public class CosmosFile {
 
     //This field stores the name of the file, it is a not nullable field and its length can be up to 260 characters.
     @Basic(optional = false)
+    
     @Column(name = "file_name", nullable = false, length = 255)
     private String fileName;
 
@@ -30,25 +31,21 @@ public class CosmosFile {
     @Column(name = "file_path", nullable = false, length = 255)
     private String filePath;
 
-    //This field stores the type of the file, it is a not nullable field and its behaviour is the same as in a Long.
+    //This field stores the size of the file, it is a not nullable field and it behave as a Long.
     @Basic(optional = false)
     @Column(name = "file_size", nullable = false)
     private Long fileSize;
 
-    //This field stores the type of the file, it is a not nullable field and its length can be up to 50 characters.
+    //This field stores the name of the key, it is a not nullable field and its length can be up to 50 characters.
     @Basic(optional = false)
-    @Column(name = "encrypting_type", nullable = false, length = 50)
-    private String encryptingType;
+    @Column(name = "key_name", nullable = false, length = 50)
+    private String keyName;
+
 
     //This field stores the type of the file, it is a not nullable field and its behaviour is the same as in a Date.
     @Basic(optional = false)
-    @Column(name = "creation_date", nullable = false)
-    private LocalDate creationDate;
-
-    //This field stores the type of the file, it is a not nullable field and its behaviour is the same as in a Date.
-    @Basic(optional = false)
-    @Column(name = "last_modification_date", nullable = false)
-    private LocalDate lastModificationDate;
+    @Column(name = "enc_date", nullable = false)
+    private LocalDate encDate;
 
     @Lob
     @Column(name = "file_content", columnDefinition = "LONGBLOB", nullable = false)
